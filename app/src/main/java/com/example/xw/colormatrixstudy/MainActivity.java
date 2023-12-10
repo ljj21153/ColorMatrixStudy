@@ -3,17 +3,24 @@ package com.example.xw.colormatrixstudy;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
+import android.graphics.Color;
 import android.graphics.ColorMatrix;
 import android.graphics.ColorMatrixColorFilter;
+import android.graphics.Matrix;
 import android.graphics.Paint;
+import android.graphics.Path;
+import android.graphics.Rect;
+import android.graphics.RectF;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.GridLayout;
 import android.widget.ImageView;
 
 public class MainActivity extends AppCompatActivity {
+    private static final String TAG = "MainActivity";
     private ImageView mImageView;
     private GridLayout mGroup;
     private Bitmap bitmap;
@@ -51,6 +58,8 @@ public class MainActivity extends AppCompatActivity {
     }
 
     // 将矩阵值设置到图像
+    int rotated = 0;
+    Matrix matrix = new Matrix();
     private void setImageMatrix() {
         Bitmap bmp = Bitmap.createBitmap(
                 bitmap.getWidth(),
@@ -59,11 +68,37 @@ public class MainActivity extends AppCompatActivity {
         android.graphics.ColorMatrix colorMatrix =
                 new android.graphics.ColorMatrix();
         colorMatrix.set(mColorMatrix);
+        int centerX = 900;
+        int centerY = 520;
+
+        matrix.postRotate(30, centerX, centerY);
 
         Canvas canvas = new Canvas(bmp);
         Paint paint = new Paint();
         paint.setColorFilter(new ColorMatrixColorFilter(colorMatrix));
-        canvas.drawBitmap(bitmap, 0, 0, paint);
+        //paint.setColor(0x10ff0000);
+        paint.setStyle(Paint.Style.STROKE);
+        //RectF r = new RectF();
+        //r.set(100,100, 800, 800);
+        canvas.save();
+        Path path = new Path();
+        //path.addRect(100,100, 800, 800, Path.Direction.CCW);
+        path.addCircle(centerX, centerY, 400, Path.Direction.CCW);
+
+        Path fP = new Path();
+        paint.setStrokeWidth(200);
+        boolean result = paint.getFillPath(path, fP);
+        Log.d(TAG, "result:" + result);
+
+        //canvas.setMatrix(matrix);
+        canvas.clipPath(fP);
+
+        canvas.drawBitmap(bitmap, matrix, paint);
+        canvas.restore();
+
+
+        //canvas.drawPath(fP, paint);
+
         mImageView.setImageBitmap(bmp);
     }
 
